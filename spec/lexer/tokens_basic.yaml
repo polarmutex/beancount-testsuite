@@ -1,0 +1,271 @@
+version: "1.0"
+category: "lexer/basic"
+description: "Core token recognition tests - keywords, operators, flags"
+
+tests:
+  # Keywords
+  - name: "Keyword: txn"
+    input: "txn"
+    expected:
+      - type: TXN
+        value: "txn"
+        line: 1
+        column: 1
+
+  - name: "Keyword: balance"
+    input: "balance"
+    expected:
+      - type: BALANCE
+        value: "balance"
+        line: 1
+        column: 1
+
+  - name: "Keyword: open"
+    input: "open"
+    expected:
+      - type: OPEN
+        value: "open"
+        line: 1
+        column: 1
+
+  - name: "Keyword: close"
+    input: "close"
+    expected:
+      - type: CLOSE
+        value: "close"
+        line: 1
+        column: 1
+
+  - name: "Keyword: commodity"
+    input: "commodity"
+    expected:
+      - type: COMMODITY
+        value: "commodity"
+        line: 1
+        column: 1
+
+  - name: "Keyword: pad"
+    input: "pad"
+    expected:
+      - type: PAD
+        value: "pad"
+        line: 1
+        column: 1
+
+  - name: "Keyword: event"
+    input: "event"
+    expected:
+      - type: EVENT
+        value: "event"
+        line: 1
+        column: 1
+
+  - name: "Keyword: price"
+    input: "price"
+    expected:
+      - type: PRICE
+        value: "price"
+        line: 1
+        column: 1
+
+  - name: "Keyword: note"
+    input: "note"
+    expected:
+      - type: NOTE
+        value: "note"
+        line: 1
+        column: 1
+
+  - name: "Keyword: document"
+    input: "document"
+    expected:
+      - type: DOCUMENT
+        value: "document"
+        line: 1
+        column: 1
+
+  - name: "Keyword: query"
+    input: "query"
+    expected:
+      - type: QUERY
+        value: "query"
+        line: 1
+        column: 1
+
+  - name: "Keyword: custom"
+    input: "custom"
+    expected:
+      - type: CUSTOM
+        value: "custom"
+        line: 1
+        column: 1
+
+  - name: "Keyword: pushtag"
+    input: "pushtag"
+    expected:
+      - type: PUSHTAG
+        value: "pushtag"
+        line: 1
+        column: 1
+
+  - name: "Keyword: poptag"
+    input: "poptag"
+    expected:
+      - type: POPTAG
+        value: "poptag"
+        line: 1
+        column: 1
+
+  - name: "Keyword: pushmeta"
+    input: "pushmeta"
+    expected:
+      - type: PUSHMETA
+        value: "pushmeta"
+        line: 1
+        column: 1
+
+  - name: "Keyword: popmeta"
+    input: "popmeta"
+    expected:
+      - type: POPMETA
+        value: "popmeta"
+        line: 1
+        column: 1
+
+  - name: "Keyword: option"
+    input: "option"
+    expected:
+      - type: OPTION
+        value: "option"
+        line: 1
+        column: 1
+
+  - name: "Keyword: include"
+    input: "include"
+    expected:
+      - type: INCLUDE
+        value: "include"
+        line: 1
+        column: 1
+
+  - name: "Keyword: plugin"
+    input: "plugin"
+    expected:
+      - type: PLUGIN
+        value: "plugin"
+        line: 1
+        column: 1
+
+  # Operators and Delimiters
+  - name: "Operator: pipe"
+    input: "|"
+    expected:
+      - type: PIPE
+        value: "|"
+        line: 1
+        column: 1
+
+  - name: "Operator: at"
+    input: "@"
+    expected:
+      - type: AT
+        value: "@"
+        line: 1
+        column: 1
+
+  - name: "Operator: double-at"
+    input: "@@"
+    expected:
+      - type: ATAT
+        value: "@@"
+        line: 1
+        column: 1
+
+  - name: "Operator: left-curly"
+    input: "{"
+    expected:
+      - type: LCURL
+        value: "{"
+        line: 1
+        column: 1
+
+  - name: "Operator: right-curly"
+    input: "}"
+    expected:
+      - type: RCURL
+        value: "}"
+        line: 1
+        column: 1
+
+  - name: "Operator: double-left-curly"
+    input: "{{"
+    expected:
+      - type: LCURLCURL
+        value: "{{"
+        line: 1
+        column: 1
+
+  - name: "Operator: double-right-curly"
+    input: "}}"
+    expected:
+      - type: RCURLCURL
+        value: "}}"
+        line: 1
+        column: 1
+
+  - name: "Operator: asterisk"
+    input: "*"
+    expected:
+      - type: ASTERISK
+        value: "*"
+        line: 1
+        column: 1
+
+  - name: "Operator: hash"
+    input: "#"
+    expected:
+      - type: HASH
+        value: "#"
+        line: 1
+        column: 1
+
+  # Transaction Flags
+  - name: "Flag: exclamation"
+    input: "!"
+    expected:
+      - type: FLAG
+        value: "!"
+        line: 1
+        column: 1
+
+  - name: "Flag: ampersand"
+    input: "&"
+    expected:
+      - type: FLAG
+        value: "&"
+        line: 1
+        column: 1
+
+  - name: "Flag: question"
+    input: "?"
+    expected:
+      - type: FLAG
+        value: "?"
+        line: 1
+        column: 1
+
+  - name: "Flag: percent"
+    input: "%"
+    expected:
+      - type: FLAG
+        value: "%"
+        line: 1
+        column: 1
+
+  - name: "Flag: uppercase letter"
+    input: "P"
+    expected:
+      - type: FLAG
+        value: "P"
+        line: 1
+        column: 1
