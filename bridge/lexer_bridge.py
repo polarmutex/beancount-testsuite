@@ -6,23 +6,35 @@ import sys
 
 
 def main():
-    # Hardcoded test: just echo back a simple token
-    test_input = {"input": "2024-01-15"}
+    # Read JSON from stdin
+    for line in sys.stdin:
+        try:
+            request = json.loads(line)
+            input_text = request.get("input", "")
 
-    # Mock response (we'll connect to real lexer later)
-    response = {
-        "tokens": [
-            {
-                "type": "DATE",
-                "value": "2024-01-15",
-                "line": 1,
-                "column": 1
+            # Mock response (we'll connect to real lexer later)
+            response = {
+                "tokens": [
+                    {
+                        "type": "DATE",
+                        "value": input_text,
+                        "line": 1,
+                        "column": 1
+                    }
+                ]
             }
-        ]
-    }
 
-    print(json.dumps(response))
-    sys.stdout.flush()
+            print(json.dumps(response))
+            sys.stdout.flush()
+
+        except Exception as e:
+            error_response = {
+                "error": "BridgeError",
+                "message": str(e),
+                "details": ""
+            }
+            print(json.dumps(error_response))
+            sys.stdout.flush()
 
 
 if __name__ == "__main__":
