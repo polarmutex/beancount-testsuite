@@ -98,6 +98,36 @@ pub const ASTNode = struct {
     }
 };
 
+pub const ParserError = struct {
+    error_type: []const u8,
+    message: []const u8,
+    line: ?usize,
+};
+
+pub const ParserTest = struct {
+    name: []const u8,
+    input: []const u8,
+    expected_entries: []const ASTNode,
+    expected_errors: []const ParserError,
+};
+
+pub const TestCase = union(enum) {
+    lexer: Test,
+    parser: ParserTest,
+};
+
+pub const TestSuiteType = union(enum) {
+    lexer: TestSuite,
+    parser: ParserTestSuite,
+};
+
+pub const ParserTestSuite = struct {
+    version: []const u8,
+    category: []const u8,
+    description: []const u8,
+    tests: []const ParserTest,
+};
+
 test "Test struct creation" {
     const tokens = [_]Token{
         Token{
@@ -215,4 +245,16 @@ test "ASTNode equality - with children" {
     };
 
     try testing.expect(parent1.eql(parent2));
+}
+
+test "ParserError creation" {
+    const err = ParserError{
+        .error_type = "DuplicateError",
+        .message = ".*already.*opened",
+        .line = 2,
+    };
+
+    try testing.expectEqualStrings("DuplicateError", err.error_type);
+    try testing.expectEqualStrings(".*already.*opened", err.message);
+    try testing.expectEqual(@as(usize, 2), err.line.?);
 }
