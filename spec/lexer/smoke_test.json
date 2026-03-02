@@ -1,0 +1,31 @@
+{
+  "version": "1.0",
+  "category": "lexer/smoke",
+  "description": "Minimal smoke test for bootstrap validation",
+  "tests": [
+    {
+      "name": "Simple date token",
+      "input": "2024-01-15",
+      "expected": [
+        {
+          "type": "DATE",
+          "value": "2024-01-15",
+          "line": 1,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "name": "Transaction flag asterisk",
+      "input": "*",
+      "expected": [
+        {
+          "type": "ASTERISK",
+          "value": "*",
+          "line": 1,
+          "column": 1
+        }
+      ]
+    }
+  ]
+}
