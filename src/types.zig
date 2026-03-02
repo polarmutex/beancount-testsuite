@@ -52,12 +52,17 @@ pub const TestSuite = struct {
     tests: []const Test,
 };
 
+/// AST node representing a Beancount directive.
+/// Memory ownership: Caller is responsible for:
+/// - node_type string lifetime
+/// - attributes HashMap (must call .deinit())
+/// - children slice and nested ASTNode memory
 pub const ASTNode = struct {
     node_type: []const u8,
     attributes: std.StringHashMap([]const u8),
     children: []const ASTNode,
 
-    pub fn eql(self: ASTNode, other: ASTNode, allocator: std.mem.Allocator) !bool {
+    pub fn eql(self: ASTNode, other: ASTNode) bool {
         // Check node type
         if (!std.mem.eql(u8, self.node_type, other.node_type)) {
             return false;
@@ -84,7 +89,7 @@ pub const ASTNode = struct {
 
         // Recursively check children
         for (self.children, other.children) |child_self, child_other| {
-            if (!try child_self.eql(child_other, allocator)) {
+            if (!child_self.eql(child_other)) {
                 return false;
             }
         }
@@ -136,24 +141,78 @@ test "ASTNode equality - simple nodes" {
         .children = &[_]ASTNode{},
     };
 
-    try testing.expect(try node1.eql(node2, testing.allocator));
+    try testing.expect(node1.eql(node2));
 }
 
 test "ASTNode equality - different node types" {
-    var attr_map = std.StringHashMap([]const u8).init(testing.allocator);
-    defer attr_map.deinit();
+    var attr_map1 = std.StringHashMap([]const u8).init(testing.allocator);
+    defer attr_map1.deinit();
+
+    var attr_map2 = std.StringHashMap([]const u8).init(testing.allocator);
+    defer attr_map2.deinit();
 
     const node1 = ASTNode{
         .node_type = "Open",
-        .attributes = attr_map,
+        .attributes = attr_map1,
         .children = &[_]ASTNode{},
     };
 
     const node2 = ASTNode{
         .node_type = "Close",
-        .attributes = attr_map,
+        .attributes = attr_map2,
         .children = &[_]ASTNode{},
     };
 
-    try testing.expect(!try node1.eql(node2, testing.allocator));
+    try testing.expect(!node1.eql(node2));
+}
+
+test "ASTNode equality - with children" {
+    const allocator = testing.allocator;
+
+    // Create child nodes
+    var child1_attrs = std.StringHashMap([]const u8).init(allocator);
+    defer child1_attrs.deinit();
+    try child1_attrs.put("value", "USD");
+
+    var child2_attrs = std.StringHashMap([]const u8).init(allocator);
+    defer child2_attrs.deinit();
+    try child2_attrs.put("value", "USD");
+
+    const child1 = ASTNode{
+        .node_type = "Currency",
+        .attributes = child1_attrs,
+        .children = &[_]ASTNode{},
+    };
+
+    const child2 = ASTNode{
+        .node_type = "Currency",
+        .attributes = child2_attrs,
+        .children = &[_]ASTNode{},
+    };
+
+    // Create parent nodes with children
+    var parent1_attrs = std.StringHashMap([]const u8).init(allocator);
+    defer parent1_attrs.deinit();
+    try parent1_attrs.put("account", "Assets:Checking");
+
+    var parent2_attrs = std.StringHashMap([]const u8).init(allocator);
+    defer parent2_attrs.deinit();
+    try parent2_attrs.put("account", "Assets:Checking");
+
+    var children1 = [_]ASTNode{child1};
+    var children2 = [_]ASTNode{child2};
+
+    const parent1 = ASTNode{
+        .node_type = "Open",
+        .attributes = parent1_attrs,
+        .children = &children1,
+    };
+
+    const parent2 = ASTNode{
+        .node_type = "Open",
+        .attributes = parent2_attrs,
+        .children = &children2,
+    };
+
+    try testing.expect(parent1.eql(parent2));
 }
