@@ -98,12 +98,18 @@ pub const ASTNode = struct {
     }
 };
 
+/// Parser error expectation for test validation.
+/// Memory ownership: Caller owns error_type and message strings.
 pub const ParserError = struct {
     error_type: []const u8,
     message: []const u8,
     line: ?usize,
 };
 
+/// Parser test case with expected AST entries and errors.
+/// Memory ownership: Caller owns all strings and must manage:
+/// - expected_entries slice and nested ASTNode memory (HashMap cleanup)
+/// - expected_errors slice and ParserError memory
 pub const ParserTest = struct {
     name: []const u8,
     input: []const u8,
@@ -111,16 +117,20 @@ pub const ParserTest = struct {
     expected_errors: []const ParserError,
 };
 
+/// Tagged union discriminating between lexer and parser test cases.
 pub const TestCase = union(enum) {
     lexer: Test,
     parser: ParserTest,
 };
 
+/// Tagged union discriminating between lexer and parser test suites.
 pub const TestSuiteType = union(enum) {
     lexer: TestSuite,
     parser: ParserTestSuite,
 };
 
+/// Parser test suite containing multiple parser test cases.
+/// Memory ownership: Caller owns all strings and must manage tests slice.
 pub const ParserTestSuite = struct {
     version: []const u8,
     category: []const u8,
