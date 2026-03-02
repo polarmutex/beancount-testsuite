@@ -4,6 +4,7 @@ const std = @import("std");
 const types = @import("types.zig");
 const bridge = @import("bridge.zig");
 const runner = @import("runner.zig");
+const reporter = @import("reporter.zig");
 
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
@@ -19,4 +20,5 @@ comptime {
     _ = types;
     _ = bridge;
     _ = runner;
+    _ = reporter;
 }
