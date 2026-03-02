@@ -1,0 +1,44 @@
+version: "1.0"
+category: "lexer/smoke"
+description: "Minimal smoke test for bootstrap validation"
+
+tests:
+  - name: "Simple date token"
+    input: "2024-01-15"
+    expected:
+      - type: DATE
+        value: "2024-01-15"
+        line: 1
+        column: 1
+
+  - name: "Transaction flag asterisk"
+    input: "*"
+    expected:
+      - type: ASTERISK
+        value: "*"
+        line: 1
+        column: 1
+
+  - name: "Simple number"
+    input: "123.45"
+    expected:
+      - type: NUMBER
+        value: "123.45"
+        line: 1
+        column: 1
+
+  - name: "Currency code"
+    input: "USD"
+    expected:
+      - type: CURRENCY
+        value: "USD"
+        line: 1
+        column: 1
+
+  - name: "Simple account"
+    input: "Assets:Checking"
+    expected:
+      - type: ACCOUNT
+        value: "Assets:Checking"
+        line: 1
+        column: 1
