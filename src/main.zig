@@ -3,6 +3,7 @@ const std = @import("std");
 // Import modules to include their tests
 const types = @import("types.zig");
 const bridge = @import("bridge.zig");
+const runner = @import("runner.zig");
 
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
@@ -11,4 +12,11 @@ pub fn main() !void {
 
 test "basic test" {
     try std.testing.expect(true);
+}
+
+// Reference imports to include their tests
+comptime {
+    _ = types;
+    _ = bridge;
+    _ = runner;
 }
