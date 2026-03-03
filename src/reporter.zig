@@ -3,6 +3,16 @@ const testing = std.testing;
 const types = @import("types.zig");
 const runner_mod = @import("runner.zig");
 
+pub const ParserTestResult = struct {
+    test_name: []const u8,
+    passed: bool,
+    expected_entries: []const types.ASTNode,
+    actual_entries: []const types.ASTNode,
+    expected_errors: []const types.ParserError,
+    actual_errors: []const types.ParserError,
+    error_message: ?[]const u8,
+};
+
 pub fn Reporter(comptime WriterType: type) type {
     return struct {
         allocator: std.mem.Allocator,
@@ -39,6 +49,69 @@ pub fn Reporter(comptime WriterType: type) type {
                     });
                     try self.writer.print("  Actual[0]:   type={s}, value={s}, line={}, col={}\n", .{
                         act.type, act.value, act.line, act.column
+                    });
+                }
+            }
+        }
+
+        pub fn reportParserResult(self: *Self, result: ParserTestResult) !void {
+            if (result.passed) {
+                try self.writer.print("✓ {s}\n", .{result.test_name});
+            } else {
+                try self.writer.print("✗ {s}\n", .{result.test_name});
+
+                if (result.error_message) |err| {
+                    try self.writer.print("  Error: {s}\n", .{err});
+                }
+
+                // Entry count mismatch
+                if (result.expected_entries.len != result.actual_entries.len) {
+                    try self.writer.print("  Expected {} entries, got {}\n", .{
+                        result.expected_entries.len,
+                        result.actual_entries.len,
+                    });
+
+                    // Show expected entries summary
+                    if (result.expected_entries.len > 0) {
+                        try self.writer.print("\n  Expected entries:\n", .{});
+                        for (result.expected_entries, 0..) |entry, i| {
+                            try self.writer.print("    {}. {s}", .{ i + 1, entry.node_type });
+
+                            // Show key attributes
+                            if (entry.attributes.get("date")) |date| {
+                                try self.writer.print(" (date: {s}", .{date});
+                                if (entry.attributes.get("account")) |account| {
+                                    try self.writer.print(", account: {s}", .{account});
+                                }
+                                try self.writer.print(")", .{});
+                            }
+                            try self.writer.print("\n", .{});
+                        }
+                    }
+
+                    // Show actual entries summary
+                    if (result.actual_entries.len > 0) {
+                        try self.writer.print("\n  Actual entries:\n", .{});
+                        for (result.actual_entries, 0..) |entry, i| {
+                            try self.writer.print("    {}. {s}", .{ i + 1, entry.node_type });
+
+                            if (entry.attributes.get("date")) |date| {
+                                try self.writer.print(" (date: {s}", .{date});
+                                if (entry.attributes.get("account")) |account| {
+                                    try self.writer.print(", account: {s}", .{account});
+                                }
+                                try self.writer.print(")", .{});
+                            }
+                            try self.writer.print("\n", .{});
+                        }
+                    }
+                }
+
+                // Error count mismatch
+                if (result.expected_errors.len != result.actual_errors.len) {
+                    try self.writer.print("\n  Expected {} error(s), got {}\n", .{
+                        result.expected_errors.len,
+                        result.actual_errors.len,
                     });
                 }
             }
@@ -101,4 +174,39 @@ test "Reporter formats failing test" {
     const output = buffer.items;
     try testing.expect(std.mem.indexOf(u8, output, "✗ Failed test") != null);
     try testing.expect(std.mem.indexOf(u8, output, "Token mismatch") != null);
+}
+
+test "Reporter formats parser test failure - entry count mismatch" {
+    const allocator = testing.allocator;
+
+    var buffer = std.ArrayList(u8).init(allocator);
+    defer buffer.deinit();
+
+    var reporter = Reporter(@TypeOf(buffer.writer())).init(allocator, buffer.writer());
+
+    // Create parser test result with count mismatch
+    var expected_attrs = std.StringHashMap([]const u8).init(allocator);
+    defer expected_attrs.deinit();
+    try expected_attrs.put("date", "2024-01-01");
+
+    const expected_entry = types.ASTNode{
+        .node_type = "Open",
+        .attributes = expected_attrs,
+        .children = &[_]types.ASTNode{},
+    };
+
+    const parser_result = ParserTestResult{
+        .test_name = "Entry count test",
+        .passed = false,
+        .expected_entries = &[_]types.ASTNode{expected_entry},
+        .actual_entries = &[_]types.ASTNode{},
+        .expected_errors = &[_]types.ParserError{},
+        .actual_errors = &[_]types.ParserError{},
+        .error_message = "Entry count mismatch",
+    };
+
+    try reporter.reportParserResult(parser_result);
+
+    const output = buffer.items;
+    try testing.expect(std.mem.indexOf(u8, output, "Expected 1 entries, got 0") != null);
 }
