@@ -18,7 +18,7 @@ pub const Runner = struct {
     bridge: bridge_mod.Bridge,
 
     pub fn init(allocator: std.mem.Allocator, bridge_path: []const u8) !Runner {
-        const bridge = try bridge_mod.Bridge.init(allocator, bridge_path);
+        const bridge = try bridge_mod.Bridge.init(allocator, bridge_path, "lexer");
         return Runner{
             .allocator = allocator,
             .bridge = bridge,
