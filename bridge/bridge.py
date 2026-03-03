@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Python bridge for Beancount lexer testing."""
+"""Python bridge for Beancount lexer and parser testing."""
 
+import argparse
 import json
 import sys
 from io import StringIO
@@ -63,14 +64,37 @@ def tokenize_with_beancount(input_text):
         }
 
 
+def parse_with_beancount(input_text):
+    """Parse input using Beancount parser (stub for future implementation)."""
+    return {
+        "error": "NotImplemented",
+        "message": "Parser mode not yet implemented",
+        "details": "Use --mode lexer for tokenization"
+    }
+
+
 def main():
-    """Read JSON requests from stdin, tokenize, write JSON responses to stdout."""
+    """Read JSON requests from stdin, process based on mode, write JSON responses to stdout."""
+    parser = argparse.ArgumentParser(description='Beancount lexer/parser bridge')
+    parser.add_argument('--mode', choices=['lexer', 'parser'], required=True,
+                        help='Operation mode: lexer for tokenization, parser for parsing')
+    args = parser.parse_args()
+
+    # Dispatch based on mode
+    if args.mode == 'lexer':
+        process_func = tokenize_with_beancount
+    elif args.mode == 'parser':
+        process_func = parse_with_beancount
+    else:
+        sys.stderr.write(f"Invalid mode: {args.mode}\n")
+        sys.exit(1)
+
     for line in sys.stdin:
         try:
             request = json.loads(line)
             input_text = request.get("input", "")
 
-            response = tokenize_with_beancount(input_text)
+            response = process_func(input_text)
             print(json.dumps(response))
             sys.stdout.flush()
 
