@@ -64,6 +64,100 @@ def tokenize_with_beancount(input_text):
         }
 
 
+def serialize_error(error):
+    """Convert Beancount error to error dict."""
+    line = None
+    if hasattr(error, 'source') and error.source:
+        line = error.source.get('lineno')
+
+    return {
+        "error_type": error.__class__.__name__,
+        "message": str(error.message),
+        "line": line
+    }
+
+
+def serialize_posting(posting):
+    """Convert posting to AST node."""
+    attributes = {
+        "account": str(posting.account),
+    }
+
+    # Add units (amount) if present
+    if posting.units:
+        attributes["amount"] = str(posting.units)
+
+    return {
+        "node_type": "Posting",
+        "attributes": attributes,
+        "children": []
+    }
+
+
+def serialize_entry(entry):
+    """Convert Beancount directive to AST node dict."""
+    node = {
+        "node_type": entry.__class__.__name__,
+        "attributes": {},
+        "children": []
+    }
+
+    # Extract attributes from named tuple fields
+    for field in entry._fields:
+        value = getattr(entry, field)
+
+        # Skip None, lists, tuples (these become children or are ignored)
+        if value is None or isinstance(value, (list, tuple)):
+            continue
+
+        # Convert everything to string
+        node["attributes"][field] = str(value)
+
+    # Handle postings as children (for Transaction directives)
+    if hasattr(entry, 'postings') and entry.postings:
+        node["children"] = [serialize_posting(p) for p in entry.postings]
+
+    # Handle currencies as children (for Open directives)
+    if hasattr(entry, 'currencies') and entry.currencies:
+        node["children"] = [{"node_type": "Currency", "attributes": {"value": c}, "children": []}
+                           for c in entry.currencies]
+
+    return node
+
+
+def parser_mode(input_text):
+    """Parse input using Beancount parser."""
+    try:
+        from beancount.parser import parser
+
+        # Parse as complete file
+        entries, errors, options = parser.parse_string(input_text)
+
+        # Serialize entries
+        serialized_entries = [serialize_entry(e) for e in entries]
+
+        # Serialize errors
+        serialized_errors = [serialize_error(e) for e in errors]
+
+        return {
+            "entries": serialized_entries,
+            "errors": serialized_errors
+        }
+
+    except ImportError as e:
+        return {
+            "error": "ImportError",
+            "message": "Failed to import beancount.parser",
+            "details": str(e)
+        }
+    except Exception as e:
+        return {
+            "error": "ParserError",
+            "message": str(e),
+            "details": str(type(e).__name__)
+        }
+
+
 def parse_with_beancount(input_text):
     """Parse input using Beancount parser (stub for future implementation)."""
     return {
@@ -84,7 +178,7 @@ def main():
     if args.mode == 'lexer':
         process_func = tokenize_with_beancount
     elif args.mode == 'parser':
-        process_func = parse_with_beancount
+        process_func = parser_mode
     else:
         sys.stderr.write(f"Invalid mode: {args.mode}\n")
         sys.exit(1)

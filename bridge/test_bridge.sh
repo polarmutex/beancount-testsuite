@@ -19,13 +19,13 @@ else
     exit 1
 fi
 
-# Test 2: Parser mode returns NotImplemented
-echo "Test 2: Parser mode returns NotImplemented"
-RESULT=$(echo '{"input": "txn"}' | python3 "$BRIDGE" --mode parser)
-if echo "$RESULT" | jq -e '.error == "NotImplemented"' > /dev/null 2>&1; then
-    echo "  ✓ Parser mode returns NotImplemented"
+# Test 2: Parser mode works
+echo "Test 2: Parser mode works"
+RESULT=$(echo '{"input": "2024-01-01 open Assets:Checking"}' | python3 "$BRIDGE" --mode parser)
+if echo "$RESULT" | jq -e '.entries[0].node_type == "Open"' > /dev/null 2>&1; then
+    echo "  ✓ Parser mode works"
 else
-    echo "  ✗ Parser mode should return NotImplemented error"
+    echo "  ✗ Parser mode failed"
     echo "  Result: $RESULT"
     exit 1
 fi
