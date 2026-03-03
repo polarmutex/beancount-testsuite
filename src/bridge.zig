@@ -49,7 +49,7 @@ pub const Bridge = struct {
 test "Bridge spawn and communicate" {
     const allocator = testing.allocator;
 
-    var bridge = try Bridge.init(allocator, "bridge/lexer_bridge.py", "lexer");
+    var bridge = try Bridge.init(allocator, "bridge/bridge.py", "lexer");
     defer bridge.deinit();
 
     // Give the process time to start

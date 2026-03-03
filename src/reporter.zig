@@ -3,16 +3,6 @@ const testing = std.testing;
 const types = @import("types.zig");
 const runner_mod = @import("runner.zig");
 
-pub const ParserTestResult = struct {
-    test_name: []const u8,
-    passed: bool,
-    expected_entries: []const types.ASTNode,
-    actual_entries: []const types.ASTNode,
-    expected_errors: []const types.ParserError,
-    actual_errors: []const types.ParserError,
-    error_message: ?[]const u8,
-};
-
 pub fn Reporter(comptime WriterType: type) type {
     return struct {
         allocator: std.mem.Allocator,
@@ -54,7 +44,7 @@ pub fn Reporter(comptime WriterType: type) type {
             }
         }
 
-        pub fn reportParserResult(self: *Self, result: ParserTestResult) !void {
+        pub fn reportParserResult(self: *Self, result: runner_mod.ParserTestResult) !void {
             if (result.passed) {
                 try self.writer.print("✓ {s}\n", .{result.test_name});
             } else {
@@ -195,7 +185,7 @@ test "Reporter formats parser test failure - entry count mismatch" {
         .children = &[_]types.ASTNode{},
     };
 
-    const parser_result = ParserTestResult{
+    const parser_result = runner_mod.ParserTestResult{
         .test_name = "Entry count test",
         .passed = false,
         .expected_entries = &[_]types.ASTNode{expected_entry},

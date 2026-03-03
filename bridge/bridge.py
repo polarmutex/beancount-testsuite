@@ -110,6 +110,10 @@ def serialize_entry(entry):
         if value is None or isinstance(value, (list, tuple)):
             continue
 
+        # Skip meta field (internal Beancount metadata not relevant for tests)
+        if field == 'meta':
+            continue
+
         # Convert everything to string
         node["attributes"][field] = str(value)
 

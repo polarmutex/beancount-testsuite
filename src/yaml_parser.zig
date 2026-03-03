@@ -120,6 +120,64 @@ pub fn freeASTNode(allocator: std.mem.Allocator, node: types.ASTNode) void {
     allocator.free(node.children);
 }
 
+/// Convert a flat directive structure (type, date, account, etc) to ASTNode
+/// This handles the simpler YAML format where expected is a single directive object
+fn parseDirectiveToASTNode(allocator: std.mem.Allocator, node: yaml.Value) !types.ASTNode {
+    const node_map = node.map;
+
+    // Get the type field and capitalize it (open -> Open, close -> Close)
+    const type_str = node_map.get("type").?.string;
+    const node_type = try std.fmt.allocPrint(allocator, "{s}", .{type_str});
+    // Capitalize first letter
+    if (node_type.len > 0 and node_type[0] >= 'a' and node_type[0] <= 'z') {
+        node_type[0] = node_type[0] - 'a' + 'A';
+    }
+
+    // Extract all other fields as attributes
+    var attributes = std.StringHashMap([]const u8).init(allocator);
+    var map_iter = node_map.iterator();
+    while (map_iter.next()) |entry| {
+        const key = entry.key_ptr.*;
+        // Skip type and currencies (handled separately)
+        if (std.mem.eql(u8, key, "type") or std.mem.eql(u8, key, "currencies")) {
+            continue;
+        }
+
+        const value = entry.value_ptr.*;
+        if (value == .string) {
+            const key_owned = try allocator.dupe(u8, key);
+            const value_owned = try allocator.dupe(u8, value.string);
+            try attributes.put(key_owned, value_owned);
+        }
+    }
+
+    // Handle currencies as children (for Open directives)
+    var children = std.ArrayList(types.ASTNode).init(allocator);
+    defer children.deinit();
+
+    if (node_map.get("currencies")) |currencies_value| {
+        const currencies_list = currencies_value.list;
+        for (currencies_list) |currency_val| {
+            var currency_attrs = std.StringHashMap([]const u8).init(allocator);
+            const value_owned = try allocator.dupe(u8, currency_val.string);
+            try currency_attrs.put(try allocator.dupe(u8, "value"), value_owned);
+
+            const currency_node = types.ASTNode{
+                .node_type = try allocator.dupe(u8, "Currency"),
+                .attributes = currency_attrs,
+                .children = &[_]types.ASTNode{},
+            };
+            try children.append(currency_node);
+        }
+    }
+
+    return types.ASTNode{
+        .node_type = node_type,
+        .attributes = attributes,
+        .children = try children.toOwnedSlice(),
+    };
+}
+
 /// Parse a parser test file (YAML) and return a ParserTestSuite
 pub fn parseParserTestFile(allocator: std.mem.Allocator, file_path: []const u8) !types.ParserTestSuite {
     const file = try std.fs.cwd().openFile(file_path, .{});
@@ -152,12 +210,19 @@ pub fn parseParserTestFile(allocator: std.mem.Allocator, file_path: []const u8) 
         var expected_entries = std.ArrayList(types.ASTNode).init(allocator);
         defer expected_entries.deinit();
 
+        // Support both formats:
+        // 1. expected_entries: [...] (list of entry objects)
+        // 2. expected: {type: "open", date: "...", ...} (flat directive object)
         if (test_map.get("expected_entries")) |entries_value| {
             const entries_list = entries_value.list;
             for (entries_list) |entry_node| {
                 const ast_node = try parseASTNode(allocator, entry_node);
                 try expected_entries.append(ast_node);
             }
+        } else if (test_map.get("expected")) |expected_value| {
+            // Convert flat expected structure to ASTNode
+            const ast_node = try parseDirectiveToASTNode(allocator, expected_value);
+            try expected_entries.append(ast_node);
         }
 
         // Parse expected_errors

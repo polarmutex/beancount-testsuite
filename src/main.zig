@@ -12,7 +12,7 @@ pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
 
     // Parse test file
-    const test_file = "spec/lexer/tokens_basic.yaml";
+    const test_file = "spec/parser/open_close.yaml";
 
     // Detect test type from file path
     const is_parser_test = std.mem.indexOf(u8, test_file, "parser/") != null;
@@ -45,7 +45,7 @@ fn runLexerTests(allocator: std.mem.Allocator, test_file: []const u8, stdout: an
     try stdout.print("Running test suite: {s}\n", .{suite.description});
     try stdout.print("Category: {s}\n\n", .{suite.category});
 
-    var runner = try runner_mod.Runner.init(allocator, "bridge/lexer_bridge.py");
+    var runner = try runner_mod.Runner.init(allocator, "bridge/bridge.py");
     defer runner.deinit();
 
     var reporter = reporter_mod.Reporter(@TypeOf(stdout)).init(allocator, stdout);
@@ -96,9 +96,45 @@ fn runParserTests(allocator: std.mem.Allocator, test_file: []const u8, stdout: a
         allocator.free(suite.description);
     }
 
-    try stdout.print("Loaded {d} parser tests from {s}\n", .{suite.tests.len, test_file});
-    try stdout.print("Description: {s}\n", .{suite.description});
-    try stdout.print("Category: {s}\n", .{suite.category});
+    try stdout.print("Running test suite: {s}\n", .{suite.description});
+    try stdout.print("Category: {s}\n\n", .{suite.category});
+
+    var runner = try runner_mod.Runner.initParser(allocator, "bridge/bridge.py");
+    defer runner.deinit();
+
+    var reporter = reporter_mod.Reporter(@TypeOf(stdout)).init(allocator, stdout);
+
+    var passed_count: usize = 0;
+    const total_count = suite.tests.len;
+
+    for (suite.tests) |test_case| {
+        const result = try runner.runParserTest(test_case);
+        defer {
+            // Free actual entries
+            for (result.actual_entries) |entry| {
+                freeASTNode(allocator, entry);
+            }
+            allocator.free(result.actual_entries);
+
+            // Free actual errors
+            for (result.actual_errors) |err| {
+                allocator.free(err.error_type);
+                allocator.free(err.message);
+            }
+            allocator.free(result.actual_errors);
+        }
+
+        try reporter.reportParserResult(result);
+
+        if (result.passed) {
+            passed_count += 1;
+        }
+    }
+
+    try reporter.reportSummary(total_count, passed_count);
+
+    const exit_code: u8 = if (passed_count == total_count) 0 else 1;
+    std.process.exit(exit_code);
 }
 
 /// Recursively free an ASTNode and all its owned memory
