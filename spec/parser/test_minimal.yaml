@@ -1,0 +1,18 @@
+version: "1.0"
+category: "parser"
+description: "Minimal parser test for development"
+
+tests:
+  - name: "Open directive"
+    input: "2024-01-01 open Assets:Checking USD"
+    expected_entries:
+      - node_type: Open
+        attributes:
+          date: "2024-01-01"
+          account: "Assets:Checking"
+        children:
+          - node_type: Currency
+            attributes:
+              value: "USD"
+            children: []
+    expected_errors: []

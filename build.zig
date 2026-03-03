@@ -13,6 +13,12 @@ pub fn build(b: *std.Build) void {
 
     b.installArtifact(exe);
 
+    const yaml = b.dependency("yaml", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    exe.root_module.addImport("yaml", yaml.module("yaml"));
+
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
 
@@ -29,6 +35,8 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+
+    unit_tests.root_module.addImport("yaml", yaml.module("yaml"));
 
     const run_unit_tests = b.addRunArtifact(unit_tests);
 

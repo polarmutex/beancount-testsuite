@@ -29,6 +29,18 @@ pub fn Reporter(comptime WriterType: type) type {
                     result.expected_tokens.len,
                     result.actual_tokens.len,
                 });
+
+                // Show token details for debugging
+                if (result.expected_tokens.len > 0 and result.actual_tokens.len > 0) {
+                    const exp = result.expected_tokens[0];
+                    const act = result.actual_tokens[0];
+                    try self.writer.print("  Expected[0]: type={s}, value={s}, line={}, col={}\n", .{
+                        exp.type, exp.value, exp.line, exp.column
+                    });
+                    try self.writer.print("  Actual[0]:   type={s}, value={s}, line={}, col={}\n", .{
+                        act.type, act.value, act.line, act.column
+                    });
+                }
             }
         }
 

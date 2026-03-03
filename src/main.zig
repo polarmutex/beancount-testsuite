@@ -12,7 +12,7 @@ pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
 
     // Parse test file
-    const test_file = "spec/lexer/smoke_test.json";
+    const test_file = "spec/lexer/tokens_basic.yaml";
     const suite = try yaml_parser.parseTestFile(allocator, test_file);
     defer {
         for (suite.tests) |test_case| {

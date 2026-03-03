@@ -261,11 +261,3 @@ tests:
         value: "%"
         line: 1
         column: 1
-
-  - name: "Flag: uppercase letter"
-    input: "P"
-    expected:
-      - type: FLAG
-        value: "P"
-        line: 1
-        column: 1

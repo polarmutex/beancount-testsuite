@@ -34,8 +34,9 @@ def tokenize_with_beancount(input_text):
                 col = 1
 
             # Convert value to string representation
+            # Use tok_text as value when tok_value is None (common for keywords/operators)
             if tok_value is None:
-                value_str = ""
+                value_str = tok_text
             else:
                 value_str = str(tok_value)
 
