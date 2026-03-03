@@ -1,0 +1,45 @@
+version: "1.0"
+category: "parser/transactions"
+description: "Transaction parsing tests"
+
+tests:
+  - name: "Simple transaction"
+    input: |
+      2020-01-15 * "Grocery store"
+        Assets:Checking  -50.00 USD
+        Expenses:Food     50.00 USD
+    expected:
+      type: "transaction"
+      date: "2020-01-15"
+      flag: "*"
+      narration: "Grocery store"
+      postings:
+        - account: "Assets:Checking"
+          amount: "-50.00"
+          currency: "USD"
+        - account: "Expenses:Food"
+          amount: "50.00"
+          currency: "USD"
+
+  - name: "Transaction with payee"
+    input: |
+      2020-01-15 * "Safeway" "Grocery shopping"
+        Assets:Checking  -50.00 USD
+        Expenses:Food     50.00 USD
+    expected:
+      type: "transaction"
+      date: "2020-01-15"
+      flag: "*"
+      payee: "Safeway"
+      narration: "Grocery shopping"
+
+  - name: "Transaction with ! flag"
+    input: |
+      2020-01-15 ! "Pending charge"
+        Assets:Checking  -50.00 USD
+        Expenses:Food     50.00 USD
+    expected:
+      type: "transaction"
+      date: "2020-01-15"
+      flag: "!"
+      narration: "Pending charge"

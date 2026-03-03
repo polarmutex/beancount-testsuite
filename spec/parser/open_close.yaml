@@ -1,0 +1,27 @@
+version: "1.0"
+category: "parser/directives"
+description: "Open and Close directive parsing tests"
+
+tests:
+  - name: "Simple open directive"
+    input: "2020-01-01 open Assets:Checking"
+    expected:
+      type: "open"
+      date: "2020-01-01"
+      account: "Assets:Checking"
+      currencies: []
+
+  - name: "Open with currency constraint"
+    input: "2020-01-01 open Assets:Checking USD"
+    expected:
+      type: "open"
+      date: "2020-01-01"
+      account: "Assets:Checking"
+      currencies: ["USD"]
+
+  - name: "Simple close directive"
+    input: "2020-12-31 close Assets:Checking"
+    expected:
+      type: "close"
+      date: "2020-12-31"
+      account: "Assets:Checking"

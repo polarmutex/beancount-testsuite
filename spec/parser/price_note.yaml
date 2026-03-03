@@ -1,0 +1,29 @@
+version: "1.0"
+category: "parser/directives"
+description: "Price, Note, and Document directive parsing tests"
+
+tests:
+  - name: "Price directive"
+    input: "2020-01-01 price USD 1.20 CAD"
+    expected:
+      type: "price"
+      date: "2020-01-01"
+      currency: "USD"
+      amount: "1.20"
+      target_currency: "CAD"
+
+  - name: "Note directive"
+    input: "2020-01-01 note Assets:Checking \"Called bank about fees\""
+    expected:
+      type: "note"
+      date: "2020-01-01"
+      account: "Assets:Checking"
+      comment: "Called bank about fees"
+
+  - name: "Document directive"
+    input: "2020-01-01 document Assets:Checking \"statements/2020-01.pdf\""
+    expected:
+      type: "document"
+      date: "2020-01-01"
+      account: "Assets:Checking"
+      path: "statements/2020-01.pdf"

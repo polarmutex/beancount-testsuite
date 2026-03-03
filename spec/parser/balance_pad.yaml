@@ -1,0 +1,21 @@
+version: "1.0"
+category: "parser/directives"
+description: "Balance and Pad directive parsing tests"
+
+tests:
+  - name: "Balance assertion"
+    input: "2020-01-31 balance Assets:Checking 1000.00 USD"
+    expected:
+      type: "balance"
+      date: "2020-01-31"
+      account: "Assets:Checking"
+      amount: "1000.00"
+      currency: "USD"
+
+  - name: "Pad directive"
+    input: "2020-01-01 pad Assets:Checking Equity:Opening-Balances"
+    expected:
+      type: "pad"
+      date: "2020-01-01"
+      account: "Assets:Checking"
+      source: "Equity:Opening-Balances"

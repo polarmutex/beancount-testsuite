@@ -1,0 +1,16 @@
+version: "1.0"
+category: "parser/metadata"
+description: "Tag stack (pushtag/poptag) parsing tests"
+
+tests:
+  - name: "Pushtag directive"
+    input: "pushtag #trip-2020"
+    expected:
+      type: "pushtag"
+      tag: "trip-2020"
+
+  - name: "Poptag directive"
+    input: "poptag #trip-2020"
+    expected:
+      type: "poptag"
+      tag: "trip-2020"

@@ -1,0 +1,23 @@
+version: "1.0"
+category: "parser/options"
+description: "Option, Plugin, and Include directive parsing tests"
+
+tests:
+  - name: "Option directive"
+    input: "option \"title\" \"My Ledger\""
+    expected:
+      type: "option"
+      key: "title"
+      value: "My Ledger"
+
+  - name: "Plugin directive"
+    input: "plugin \"beancount.plugins.auto_accounts\""
+    expected:
+      type: "plugin"
+      name: "beancount.plugins.auto_accounts"
+
+  - name: "Include directive"
+    input: "include \"accounts.beancount\""
+    expected:
+      type: "include"
+      filename: "accounts.beancount"
