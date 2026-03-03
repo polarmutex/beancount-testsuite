@@ -6,8 +6,8 @@ pub const Bridge = struct {
     allocator: std.mem.Allocator,
     process: std.process.Child,
 
-    pub fn init(allocator: std.mem.Allocator, bridge_path: []const u8) !Bridge {
-        var process = std.process.Child.init(&[_][]const u8{ "python3", bridge_path }, allocator);
+    pub fn init(allocator: std.mem.Allocator, bridge_path: []const u8, mode: []const u8) !Bridge {
+        var process = std.process.Child.init(&[_][]const u8{ "python3", bridge_path, "--mode", mode }, allocator);
         process.stdin_behavior = .Pipe;
         process.stdout_behavior = .Pipe;
         process.stderr_behavior = .Pipe;
